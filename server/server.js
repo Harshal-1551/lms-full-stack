@@ -17,7 +17,12 @@ await connectDB()
 await connectCloudinary()
 
 // Middlewares
-app.use(cors())
+app.use(cors({
+  origin: ["http://localhost:5173", "https://lms-full-stack-gules-nine.vercel.app"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
+}))
+
 app.use(clerkMiddleware())
 
 // Routes
