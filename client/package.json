@@ -12,8 +12,11 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.17.1",
     "@tailwindcss/vite": "^4.1.13",
+    "aos": "^2.3.4",
     "axios": "^1.7.8",
+    "framer-motion": "^12.23.22",
     "humanize-duration": "^3.33.1",
+    "lucide-react": "^0.544.0",
     "os-browserify": "^0.3.0",
     "quill": "^2.0.3",
     "rc-progress": "^4.0.0",
