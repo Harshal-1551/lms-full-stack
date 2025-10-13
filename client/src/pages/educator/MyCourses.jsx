@@ -3,69 +3,89 @@ import { AppContext } from '../../context/AppContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Loading from '../../components/student/Loading';
+import { motion } from 'framer-motion';
 
 const MyCourses = () => {
-
-  const { backendUrl, isEducator, currency, getToken } = useContext(AppContext)
-
-  const [courses, setCourses] = useState(null)
+  const { backendUrl, isEducator, currency, getToken } = useContext(AppContext);
+  const [courses, setCourses] = useState(null);
 
   const fetchEducatorCourses = async () => {
-
     try {
-
-      const token = await getToken()
-
-      const { data } = await axios.get(backendUrl + '/api/educator/courses', { headers: { Authorization: `Bearer ${token}` } })
-
-      data.success && setCourses(data.courses)
-
+      const token = await getToken();
+      const { data } = await axios.get(backendUrl + '/api/educator/courses', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      data.success && setCourses(data.courses);
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
-
-  }
+  };
 
   useEffect(() => {
-    if (isEducator) {
-      fetchEducatorCourses()
-    }
-  }, [isEducator])
+    if (isEducator) fetchEducatorCourses();
+  }, [isEducator]);
 
   return courses ? (
-    <div className="h-screen flex flex-col items-start justify-between md:p-8 md:pb-0 p-4 pt-8 pb-0">
-      <div className='w-full'>
-        <h2 className="pb-4 text-lg font-medium">My Courses</h2>
-        <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-          <table className="md:table-auto table-fixed w-full overflow-hidden">
-            <thead className="text-gray-900 border-b border-gray-500/20 text-sm text-left">
-              <tr>
-                <th className="px-4 py-3 font-semibold truncate">All Courses</th>
-                <th className="px-4 py-3 font-semibold truncate">Earnings</th>
-                <th className="px-4 py-3 font-semibold truncate">Students</th>
-                <th className="px-4 py-3 font-semibold truncate">Published On</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm text-gray-500">
-              {courses.map((course) => (
-                <tr key={course._id} className="border-b border-gray-500/20">
-                  <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
-                    <img src={course.courseThumbnail} alt="Course Image" className="w-16" />
-                    <span className="truncate hidden md:block">{course.courseTitle}</span>
-                  </td>
-                  <td className="px-4 py-3">{currency} {Math.floor(course.enrolledStudents.length * (course.coursePrice - course.discount * course.coursePrice / 100))}</td>
-                  <td className="px-4 py-3">{course.enrolledStudents.length}</td>
-                  <td className="px-4 py-3">
-                    {new Date(course.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div className="min-h-screen flex flex-col items-center md:p-8 p-4 pt-8 bg-gray-50">
+     
+      {/* Title */}
+        <h2 className="text-4xl font-extrabold text-center bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-4">
+          My Projects
+        </h2>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-5xl overflow-hidden rounded-2xl bg-white/80 backdrop-blur-md shadow-lg border border-gray-200"
+      >
+        <table className="w-full table-auto text-left">
+          <thead className="text-gray-900 border-b border-gray-300 text-sm md:text-base">
+            <tr>
+              <th className="px-4 py-3 font-semibold truncate">All Courses</th>
+              <th className="px-4 py-3 font-semibold truncate">Earnings</th>
+              <th className="px-4 py-3 font-semibold truncate">Students</th>
+              <th className="px-4 py-3 font-semibold truncate">Published On</th>
+            </tr>
+          </thead>
+          <tbody className="text-gray-600 text-sm md:text-base">
+            {courses.map((course, index) => (
+              <motion.tr
+                key={course._id}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+                className={`border-b border-gray-200 hover:bg-gray-50 cursor-pointer`}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+              >
+                <td className="px-4 py-3 flex items-center space-x-3">
+                  <img
+                    src={course.courseThumbnail}
+                    alt="Course"
+                    className="w-16 h-16 rounded-lg object-cover shadow-sm"
+                  />
+                  <span className="truncate hidden md:block font-medium">{course.courseTitle}</span>
+                </td>
+                <td className="px-4 py-3 font-medium">
+                  {currency}{' '}
+                  {Math.floor(
+                    course.enrolledStudents.length *
+                      (course.coursePrice - (course.discount * course.coursePrice) / 100)
+                  )}
+                </td>
+                <td className="px-4 py-3 font-medium">{course.enrolledStudents.length}</td>
+                <td className="px-4 py-3 font-medium">
+                  {new Date(course.createdAt).toLocaleDateString()}
+                </td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </table>
+      </motion.div>
     </div>
-  ) : <Loading />
+  ) : (
+    <Loading />
+  );
 };
 
 export default MyCourses;

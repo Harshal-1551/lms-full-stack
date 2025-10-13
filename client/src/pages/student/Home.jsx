@@ -9,10 +9,10 @@ import CallToAction from '../../components/student/CallToAction';
 const Home = () => {
 
   return (
-    <div className="flex flex-col items-center space-y-7 text-center">
+    <div className="flex flex-col items-center space-y-5 text-center">
       <Hero />
-      <Companies />
       <CoursesSection />
+      <Companies />
       <TestimonialsSection />
       <CallToAction />
       <Footer />

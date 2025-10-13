@@ -3,54 +3,66 @@ import { assets } from "../../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const SearchBar = ({ data }) => {
+const SearchBar = ({ data, textColor = "white" }) => {
   const navigate = useNavigate();
   const [input, setInput] = useState(data ? data : "");
 
   const onSearchHandler = (e) => {
     e.preventDefault();
+    if (!input.trim()) return;
     navigate("/course-list/" + input);
   };
 
   return (
     <motion.form
       onSubmit={onSearchHandler}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="relative max-w-xl w-full md:h-14 h-12 flex items-center bg-white border border-gray-200 rounded-2xl shadow-md overflow-visible"
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="relative flex items-center justify-between w-full max-w-2xl md:h-16 h-14 rounded-2xl 
+      bg-white/10 backdrop-blur-xl border border-white/30 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]
+      overflow-hidden px-3 md:px-5"
     >
-      {/* Continuous Border Glow */}
+      {/* Animated border glow */}
       <motion.div
-        className="absolute -inset-1 rounded-2xl border-2 border-blue-400 pointer-events-none"
-        animate={{ boxShadow: ["0 0 5px rgba(37,99,235,0.4)", "0 0 15px rgba(37,99,235,0.6)", "0 0 5px rgba(37,99,235,0.4)"] }}
-        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+        className="absolute inset-0 rounded-2xl border border-transparent"
+        animate={{
+          boxShadow: [
+            "0 0 10px rgba(0, 168, 255, 0.4)",
+            "0 0 25px rgba(0, 168, 255, 0.8)",
+            "0 0 10px rgba(0, 168, 255, 0.4)",
+          ],
+        }}
+        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
       />
 
-      {/* Search Icon */}
+      {/* Search icon */}
       <motion.img
         src={assets.search_icon}
         alt="search_icon"
-        className="md:w-auto w-8 px-3 z-10"
+        className="w-7 md:w-8 z-10 opacity-90 filter invert brightness-200 drop-shadow-[0_0_2px_white]"
         whileHover={{ scale: 1.1 }}
       />
 
-      {/* Input Field */}
+      {/* Input field */}
       <input
         onChange={(e) => setInput(e.target.value)}
         value={input}
         type="text"
-        className="w-full h-full outline-none text-gray-700 placeholder-gray-400 bg-transparent text-base md:text-lg px-1 z-10"
-        placeholder="Search for courses..."
+        className={`w-full h-full bg-transparent outline-none px-3 text-base md:text-lg z-10 placeholder-gray-400`}
+        style={{ color: textColor }}
+        placeholder="Search for Projects..."
       />
 
-      {/* Search Button */}
+      {/* Search button */}
       <motion.button
         type="submit"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         transition={{ duration: 0.2 }}
-        className="bg-blue-600 rounded-xl text-white md:px-10 px-6 md:py-3 py-2 mx-2 font-semibold shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-300 transition-all duration-300 z-10"
+        className="z-10 bg-gradient-to-r from-blue-500 to-cyan-400 text-white font-semibold 
+        rounded-xl md:px-8 px-6 md:py-3 py-2 shadow-lg hover:shadow-cyan-500/40 hover:brightness-110 
+        transition-all duration-300"
       >
         Search
       </motion.button>

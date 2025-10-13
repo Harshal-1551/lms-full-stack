@@ -21,6 +21,9 @@ export const AppContextProvider = (props) => {
     const [allCourses, setAllCourses] = useState([])
     const [userData, setUserData] = useState(null)
     const [enrolledCourses, setEnrolledCourses] = useState([])
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isUser, setIsUser] = useState(false);
+
 
     // Fetch All Courses
     const fetchAllCourses = async () => {
@@ -46,9 +49,13 @@ export const AppContextProvider = (props) => {
 
         try {
 
-            if (user.publicMetadata.role === 'educator') {
-                setIsEducator(true)
+            if (user?.publicMetadata?.roles?.includes("admin")) {
+                setIsAdmin(true);
+                setIsUser(true); // admin also gets user privileges
+            } else if (user?.publicMetadata?.roles?.includes("user")) {
+                setIsUser(true);
             }
+
 
             const token = await getToken();
 
@@ -146,15 +153,17 @@ export const AppContextProvider = (props) => {
     }, [user])
 
     const value = {
-        showLogin, setShowLogin,
-        backendUrl, currency, navigate,
-        userData, setUserData, getToken,
-        allCourses, fetchAllCourses,
-        enrolledCourses, fetchUserEnrolledCourses,
-        calculateChapterTime, calculateCourseDuration,
-        calculateRating, calculateNoOfLectures,
-        isEducator,setIsEducator
-    }
+            showLogin, setShowLogin,
+            backendUrl, currency, navigate,
+            userData, setUserData, getToken,
+            allCourses, fetchAllCourses,
+            enrolledCourses, fetchUserEnrolledCourses,
+            calculateChapterTime, calculateCourseDuration,
+            calculateRating, calculateNoOfLectures,
+            isEducator, setIsEducator,
+            isAdmin, isUser, setIsAdmin, setIsUser
+        }
+
 
     return (
         <AppContext.Provider value={value}>

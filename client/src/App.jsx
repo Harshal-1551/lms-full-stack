@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Routes, Route, useMatch } from 'react-router-dom';
+import { Routes, Route, Navigate, useMatch } from 'react-router-dom';
 import Navbar from './components/student/Navbar';
 import Home from './pages/student/Home';
 import CourseDetails from './pages/student/CourseDetails';
@@ -15,29 +15,79 @@ import { ToastContainer } from 'react-toastify';
 import Player from './pages/student/Player';
 import MyEnrollments from './pages/student/MyEnrollments';
 import Loading from './components/student/Loading';
+import { AppContext } from './context/AppContext';
 
 const App = () => {
+  const { role } = useContext(AppContext);
   const isEducatorRoute = useMatch('/educator/*');
+
+  // ✅ Protect educator pages
+  const EducatorRoute = ({ children }) => {
+    if (role === 'educator' || role === 'admin') return children;
+    return <Navigate to="/" replace />;
+  };
+
+  // ✅ Protect admin-only pages
+  const AdminRoute = ({ children }) => {
+    if (role === 'admin') return children;
+    return <Navigate to="/" replace />;
+  };
+
+  // ✅ Protect user pages (like enrollments)
+  const UserRoute = ({ children }) => {
+    if (role === 'user' || role === 'admin') return children;
+    return <Navigate to="/" replace />;
+  };
 
   return (
     <div>
       <ToastContainer />
-      {/* Render Student Navbar only if not on educator routes */}
+      {/* Student Navbar only for non-educator routes */}
       {!isEducatorRoute && <Navbar />}
+
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/course/:id" element={<CourseDetails />} />
         <Route path="/course-list" element={<CoursesList />} />
         <Route path="/course-list/:input" element={<CoursesList />} />
-        <Route path="/my-enrollments" element={<MyEnrollments />} />
-        <Route path="/player/:courseId" element={<Player />} />
         <Route path="/loading/:path" element={<Loading />} />
-        <Route path='/educator' element={<Educator />}>
-          <Route path='/educator' element={<Dashboard />} />
-          <Route path='add-course' element={<AddCourse />} />
-          <Route path='my-courses' element={<MyCourses />} />
-          <Route path='student-enrolled' element={<StudentsEnrolled />} />
+
+        {/* User-only routes */}
+        <Route
+          path="/my-enrollments"
+          element={
+            <UserRoute>
+              <MyEnrollments />
+            </UserRoute>
+          }
+        />
+        <Route
+          path="/player/:courseId"
+          element={
+            <UserRoute>
+              <Player />
+            </UserRoute>
+          }
+        />
+
+        {/* Educator/Admin-only routes */}
+        <Route
+          path="/educator"
+          element={
+            <EducatorRoute>
+              <Educator />
+            </EducatorRoute>
+          }
+        >
+          <Route path="/educator" element={<Dashboard />} />
+          <Route path="add-course" element={<AddCourse />} />
+          <Route path="my-courses" element={<MyCourses />} />
+          <Route path="student-enrolled" element={<StudentsEnrolled />} />
         </Route>
+
+        {/* Example admin-only route (if added later) */}
+        {/* <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} /> */}
       </Routes>
     </div>
   );
