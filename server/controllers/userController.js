@@ -3,6 +3,8 @@ import { CourseProgress } from "../models/CourseProgress.js";
 import { Purchase } from "../models/Purchase.js";
 import User from "../models/User.js";
 import stripe from "stripe";
+import { clerkClient } from "@clerk/express";
+
 
 // 🔹 Helper: Check role (admin or user)
 const checkRole = async (req, requiredRole) => {
@@ -14,17 +16,28 @@ const checkRole = async (req, requiredRole) => {
   return user;
 };
 
-// 🧠 Get User Data
 export const getUserData = async (req, res) => {
   try {
     const userId = req.auth.userId;
     const user = await User.findById(userId);
     if (!user) return res.json({ success: false, message: "User Not Found" });
-    res.json({ success: true, user });
-  } catch (error) {
-    res.json({ success: false, message: error.message });
+
+    res.json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        imageUrl: user.imageUrl,
+        role: user.role, // <-- ensure role is included
+        enrolledCourses: user.enrolledCourses,
+      },
+    });
+  } catch (err) {
+    res.json({ success: false, message: err.message });
   }
 };
+
 
 // 🛒 Purchase Course — Only for users
 export const purchaseCourse = async (req, res) => {
@@ -179,6 +192,50 @@ export const updateRoleToAdmin = async (req, res) => {
 
     res.json({ success: true, message: "User role updated to admin" });
   } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export const promoteToAdmin = async (req, res) => {
+  try {
+    const { clerkId } = req.body; // Clerk user ID
+
+    if (!clerkId) {
+      return res.json({ success: false, message: "clerkId is required" });
+    }
+
+    // 1) Update Clerk metadata
+    await clerkClient.users.updateUserMetadata(clerkId, {
+      publicMetadata: {
+        role: "educator", // your existing convention
+        roles: ["admin", "user"],
+      },
+    });
+
+    // 2) Also update or create DB user role so backend queries (and AppContext) sees admin
+    // Note: your DB User._id is the Clerk user id (from earlier code). Adjust if different.
+    const dbUser = await User.findById(clerkId);
+
+    if (dbUser) {
+      dbUser.role = "admin";
+      await dbUser.save();
+    } else {
+      // optionally create a user document (if user might not exist in DB)
+      // fetch Clerk user to get name/email/image
+      const clerkUser = await clerkClient.users.getUser(clerkId);
+      const newUser = new User({
+        _id: clerkId,
+        name: clerkUser.firstName || clerkUser.fullName || "Unknown",
+        email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
+        imageUrl: clerkUser.profileImageUrl || "",
+        role: "admin",
+      });
+      await newUser.save();
+    }
+
+    res.json({ success: true, message: "User promoted to admin successfully." });
+  } catch (error) {
+    console.error("promoteToAdmin error:", error);
     res.json({ success: false, message: error.message });
   }
 };

@@ -26,31 +26,33 @@ export const clerkWebhooks = async (req, res) => {
     // Switch Cases for differernt Events
     switch (type) {
       case 'user.created': {
+        const roleFromClerk = data.public_metadata?.role || 'user';
         const userData = {
           _id: data.id,
-          email: data.email_addresses[0].email_address,
-          name: data.first_name + " " + data.last_name,
-          imageUrl: data.image_url,
+          email: (data.email_addresses && data.email_addresses[0]?.email_address) || '',
+          name: (data.first_name || '') + " " + (data.last_name || ''),
+          imageUrl: data.image_url || '',
           resume: '',
-          role: 'user' // 👈 Default role
-        };
-      
-        await User.create(userData);
-        res.json({});
+          role: roleFromClerk
+        }
+        await User.create(userData)
+        res.json({})
         break;
       }
 
 
       case 'user.updated': {
-        const userData = {
-          email: data.email_addresses[0].email_address,
-          name: data.first_name + " " + data.last_name,
-          imageUrl: data.image_url,
+          const roleFromClerk = data.public_metadata?.role || 'user';
+          const userData = {
+            email: (data.email_addresses && data.email_addresses[0]?.email_address) || '',
+            name: (data.first_name || '') + " " + (data.last_name || ''),
+            imageUrl: data.image_url || '',
+            role: roleFromClerk
+          }
+          await User.findByIdAndUpdate(data.id, userData)
+          res.json({})
+          break;
         }
-        await User.findByIdAndUpdate(data.id, userData)
-        res.json({})
-        break;
-      }
 
       case 'user.deleted': {
         await User.findByIdAndDelete(data.id)

@@ -14,7 +14,7 @@ const Footer = () => {
         />
         <div className="hidden md:block h-6 w-px bg-gray-400/50"></div>
         <p className="text-xs md:text-sm">
-          © 2024 <span className="font-semibold text-gray-800 dark:text-gray-200">APARAITECH LMS</span>. All rights reserved.
+          © 2025 <span className="font-semibold text-gray-800 dark:text-gray-200">APARAITECH LMS</span>. All rights reserved.
         </p>
       </div>
 
