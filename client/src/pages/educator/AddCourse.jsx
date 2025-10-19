@@ -26,6 +26,7 @@ const AddCourse = () => {
   const [domain, setDomain] = useState("");
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false); // prevent double submission
 
   useEffect(() => {
     const savedForm = sessionStorage.getItem("addCourseForm");
@@ -44,7 +45,11 @@ const AddCourse = () => {
     if (!quillRef.current && editorRef.current) {
       quillRef.current = new Quill(editorRef.current, { theme: "snow" });
       quillRef.current.on("text-change", () => {
-        setDescription(quillRef.current.root.innerText);
+        const text = quillRef.current.root.innerText;
+        setDescription(text);
+        if (errors.description && text.trim() !== "") {
+          setErrors(prev => ({ ...prev, description: "" }));
+        }
       });
 
       const savedForm = sessionStorage.getItem("addCourseForm");
@@ -53,7 +58,7 @@ const AddCourse = () => {
         if (data.description) quillRef.current.root.innerHTML = data.description;
       }
     }
-  }, []);
+  }, [errors.description]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -84,10 +89,33 @@ const AddCourse = () => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!courseTitle.trim()) newErrors.courseTitle = "Project Title is required";
+    if (!description.trim()) newErrors.description = "Project Description is required";
+    if (!domain.trim()) newErrors.domain = "Project Domain is required";
+    if (!coursePrice || Number(coursePrice) < 0)
+      newErrors.coursePrice = "Valid Project Price is required";
+    if (discount && (Number(discount) < 0 || Number(discount) > 100))
+      newErrors.discount = "Discount must be between 0 and 100";
+    if (pdfLink && !isValidURL(pdfLink)) newErrors.pdfLink = "Enter a valid URL";
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
+    if (!validateForm()) {
+      const firstErrorField = document.querySelector(".border-red-500");
+      firstErrorField?.focus();
+      return;
+    }
+
+    setSubmitting(true); // disable button
     try {
       const formData = new FormData();
       const selectedDomain = domain && domain.trim() !== "" ? domain : "General";
@@ -96,23 +124,19 @@ const AddCourse = () => {
         courseDescription: description,
         coursePrice: Number(coursePrice),
         discount: Number(discount),
-        domain: selectedDomain, // ✅ always valid
+        domain: selectedDomain,
         pdfLink,
       };
 
-       console.log("Submitting courseData to backend:", courseData);
-       
       formData.append("courseData", JSON.stringify(courseData));
-      formData.append("image", image);
+      if (image) formData.append("image", image);
 
       const token = await getToken();
       const { data } = await axios.post(
         `${backendUrl}/api/educator/add-course`,
         formData,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -126,6 +150,7 @@ const AddCourse = () => {
       console.error("Upload error:", error);
       toast.error(error.response?.data?.message || error.message);
     }
+    setSubmitting(false); // enable button
   };
 
   const resetForm = () => {
@@ -138,8 +163,8 @@ const AddCourse = () => {
     setErrors({});
     sessionStorage.removeItem("addCourseForm");
     reset();
+    if (quillRef.current) quillRef.current.root.innerHTML = "";
   };
-  
 
   return (
     <div className="flex min-h-screen">
@@ -163,7 +188,10 @@ const AddCourse = () => {
                 errors.courseTitle ? "border-red-500" : "border-gray-300"
               }`}
               value={courseTitle}
-              onChange={(e) => setCourseTitle(e.target.value)}
+              onChange={(e) => {
+                setCourseTitle(e.target.value);
+                if (errors.courseTitle) setErrors(prev => ({ ...prev, courseTitle: "" }));
+              }}
             />
             {errors.courseTitle && (
               <span className="text-red-500 text-sm">{errors.courseTitle}</span>
@@ -172,13 +200,16 @@ const AddCourse = () => {
 
           {/* Description */}
           <div className="flex flex-col gap-2">
-            <p className="font-semibold text-gray-700 text-lg">
-              Project Description
-            </p>
+            <p className="font-semibold text-gray-700 text-lg">Project Description</p>
             <div
               ref={editorRef}
-              className="min-h-[200px] p-4 rounded-xl border border-gray-200 focus-within:ring-2 focus-within:ring-cyan-300"
+              className={`min-h-[200px] p-4 rounded-xl border ${
+                errors.description ? "border-red-500" : "border-gray-200"
+              } focus-within:ring-2 focus-within:ring-cyan-300`}
             />
+            {errors.description && (
+              <span className="text-red-500 text-sm">{errors.description}</span>
+            )}
           </div>
 
           {/* Domain */}
@@ -189,7 +220,10 @@ const AddCourse = () => {
                 errors.domain ? "border-red-500" : "border-gray-300"
               }`}
               value={domain}
-              onChange={(e) => setDomain(e.target.value)}
+              onChange={(e) => {
+                setDomain(e.target.value);
+                if (errors.domain) setErrors(prev => ({ ...prev, domain: "" }));
+              }}
             >
               <option value="">Select Domain</option>
               <option value="Web Development">Web Development</option>
@@ -218,8 +252,14 @@ const AddCourse = () => {
                   errors.coursePrice ? "border-red-500" : "border-gray-300"
                 }`}
                 value={coursePrice}
-                onChange={(e) => setCoursePrice(e.target.value)}
+                onChange={(e) => {
+                  setCoursePrice(e.target.value);
+                  if (errors.coursePrice) setErrors(prev => ({ ...prev, coursePrice: "" }));
+                }}
               />
+              {errors.coursePrice && (
+                <span className="text-red-500 text-sm">{errors.coursePrice}</span>
+              )}
             </div>
 
             <div className="flex flex-col gap-1">
@@ -233,16 +273,20 @@ const AddCourse = () => {
                   errors.discount ? "border-red-500" : "border-gray-300"
                 }`}
                 value={discount}
-                onChange={(e) => setDiscount(e.target.value)}
+                onChange={(e) => {
+                  setDiscount(e.target.value);
+                  if (errors.discount) setErrors(prev => ({ ...prev, discount: "" }));
+                }}
               />
+              {errors.discount && (
+                <span className="text-red-500 text-sm">{errors.discount}</span>
+              )}
             </div>
           </div>
 
           {/* PDF / Drive Link */}
           <div className="flex flex-col gap-1">
-            <p className="font-semibold">
-              View More Details (Google Drive Link)
-            </p>
+            <p className="font-semibold">View More Details (Google Drive Link)</p>
             <input
               type="url"
               placeholder="Paste your Google Drive link here"
@@ -250,13 +294,17 @@ const AddCourse = () => {
                 errors.pdfLink ? "border-red-500" : "border-gray-300"
               }`}
               value={pdfLink}
-              onChange={(e) => setPdfLink(e.target.value)}
+              onChange={(e) => {
+                setPdfLink(e.target.value);
+                if (errors.pdfLink) setErrors(prev => ({ ...prev, pdfLink: "" }));
+              }}
             />
             {errors.pdfLink && (
               <span className="text-red-500 text-sm">{errors.pdfLink}</span>
             )}
           </div>
 
+          {/* Thumbnail */}
           <ThumbnailUpload
             ref={inputRef}
             preview={preview}
@@ -264,14 +312,15 @@ const AddCourse = () => {
             onSelect={handleChange}
           />
 
-          
-
           {/* Submit */}
           <button
             type="submit"
-            className="mt-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-3 px-6 rounded-2xl shadow-md hover:scale-105 transition-all font-semibold"
+            disabled={submitting}
+            className={`mt-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-3 px-6 rounded-2xl shadow-md transition-all font-semibold ${
+              submitting ? "opacity-50 cursor-not-allowed" : "hover:scale-105"
+            }`}
           >
-            Add Project
+            {submitting ? "Adding..." : "Add Project"}
           </button>
         </form>
       </div>

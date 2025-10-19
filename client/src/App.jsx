@@ -15,10 +15,10 @@ import AddCourse from "./pages/educator/AddCourse";
 import MyCourses from "./pages/educator/MyCourses";
 import StudentsEnrolled from "./pages/educator/StudentsEnrolled";
 
-
 import "quill/dist/quill.snow.css";
 import "react-toastify/dist/ReactToastify.css";
 import EducatorLayout from "./components/layouts/EducatorLayout";
+import WhatsAppButton from "./components/common/WhatsAppButton"; // ✅ import WhatsApp button
 
 const ProtectedUserRoute = ({ children }) => {
   const { role, loading } = useContext(AppContext);
@@ -88,6 +88,9 @@ const App = () => (
       {/* 404 Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+
+    {/* ✅ WhatsApp button visible on all pages */}
+    <WhatsAppButton />
   </>
 );
 

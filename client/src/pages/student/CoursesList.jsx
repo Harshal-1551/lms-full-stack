@@ -17,18 +17,18 @@ const CourseList = () => {
   }, [allCourses]);
 
   useEffect(() => {
-  if (allCourses) {
-    console.log(
-      "All Courses:",
-      allCourses.map(c => ({ title: c.courseTitle, domain: c.domain }))
-    );
-  }
-}, [allCourses]);
+    if (allCourses) {
+      console.log(
+        "All Courses:",
+        allCourses.map(c => ({ title: c.courseTitle, domain: c.domain }))
+      );
+    }
+  }, [allCourses]);
 
   useEffect(() => {
     if (allCourses && allCourses.length > 0) {
       setIsLoading(true);
-      
+
       let tempCourses = allCourses.slice();
 
       if (searchInput) {
@@ -48,11 +48,6 @@ const CourseList = () => {
       setIsLoading(false);
     }
   }, [allCourses, searchInput, selectedDomain]);
-
-  const calculateOriginalPrice = (price, discount) => {
-    if (!discount || discount <= 0) return null;
-    return (price / (1 - discount / 100)).toFixed(2);
-  };
 
   const clearFilters = () => {
     setSearchInput("");
@@ -143,7 +138,12 @@ const CourseList = () => {
         {filteredCourses && filteredCourses.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredCourses.map((course) => {
-              const originalPrice = calculateOriginalPrice(course.coursePrice, course.discount);
+              // ✅ Calculate discounted price
+              const finalPrice = course.discount > 0
+                ? (course.coursePrice - (course.discount * course.coursePrice) / 100).toFixed(2)
+                : course.coursePrice.toFixed(2);
+
+              const originalPrice = course.discount > 0 ? course.coursePrice.toFixed(2) : null;
 
               return (
                 <div
@@ -182,7 +182,7 @@ const CourseList = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-lg text-gray-900">
-                          {currency}{course.coursePrice.toFixed(2)}
+                          {currency}{finalPrice}
                         </span>
                         {originalPrice && (
                           <span className="text-sm text-gray-500 line-through">

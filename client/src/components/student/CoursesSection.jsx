@@ -34,7 +34,7 @@ const CoursesSection = () => {
                 transition={{ duration: 0.8 }}
                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
             >
-                {allCourses?.slice(0, 4).map((course, index) => (
+                {allCourses?.slice(0, 8).map((course, index) => (
                     <CourseCard key={index} course={course} />
                 ))}
             </motion.div>
