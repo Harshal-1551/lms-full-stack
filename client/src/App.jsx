@@ -19,6 +19,12 @@ import "quill/dist/quill.snow.css";
 import "react-toastify/dist/ReactToastify.css";
 import EducatorLayout from "./components/layouts/EducatorLayout";
 import WhatsAppButton from "./components/common/WhatsAppButton"; // ✅ import WhatsApp button
+import AboutUs from "./pages/student/AboutUs";
+import ScrollToTop from "./components/ScrollToTop";
+import BackButton from "./components/common/BackButton";
+import Contact from "./pages/student/Contact";
+import PrivacyPolicy from "./pages/student/PrivacyPolicy";
+
 
 const ProtectedUserRoute = ({ children }) => {
   const { role, loading } = useContext(AppContext);
@@ -44,6 +50,8 @@ const App = () => (
   <>
     <ToastContainer position="top-center" autoClose={2000} />
     <Navbar />
+    <ScrollToTop/>
+    <BackButton/>
 
     <Routes>
       {/* 🌍 Public Routes */}
@@ -51,6 +59,9 @@ const App = () => (
       <Route path="/course/:id" element={<CourseDetails />} />
       <Route path="/course-list" element={<CoursesList />} />
       <Route path="/course-list/:input" element={<CoursesList />} />
+       <Route path="/about" element={<AboutUs />} />
+       <Route path="/contact" element={<Contact />} />
+       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
       {/* 👩‍🎓 Student Protected Routes */}
       <Route

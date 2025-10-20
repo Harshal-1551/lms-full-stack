@@ -12,7 +12,9 @@ const CourseList = () => {
 
   const domains = React.useMemo(() => {
     if (!allCourses) return [];
-    const uniqueDomains = [...new Set(allCourses.map(course => course.domain).filter(Boolean))];
+    const uniqueDomains = [
+      ...new Set(allCourses.map((course) => course.domain).filter(Boolean)),
+    ];
     return uniqueDomains.sort();
   }, [allCourses]);
 
@@ -20,7 +22,7 @@ const CourseList = () => {
     if (allCourses) {
       console.log(
         "All Courses:",
-        allCourses.map(c => ({ title: c.courseTitle, domain: c.domain }))
+        allCourses.map((c) => ({ title: c.courseTitle, domain: c.domain }))
       );
     }
   }, [allCourses]);
@@ -32,15 +34,22 @@ const CourseList = () => {
       let tempCourses = allCourses.slice();
 
       if (searchInput) {
-        tempCourses = tempCourses.filter((item) =>
-          item.courseTitle.toLowerCase().includes(searchInput.toLowerCase()) ||
-          item.courseDescription.toLowerCase().includes(searchInput.toLowerCase())
+        tempCourses = tempCourses.filter(
+          (item) =>
+            item.courseTitle
+              .toLowerCase()
+              .includes(searchInput.toLowerCase()) ||
+            item.courseDescription
+              .toLowerCase()
+              .includes(searchInput.toLowerCase())
         );
       }
 
       if (selectedDomain) {
         tempCourses = tempCourses.filter(
-          (item) => item.domain && item.domain.toLowerCase() === selectedDomain.toLowerCase()
+          (item) =>
+            item.domain &&
+            item.domain.toLowerCase() === selectedDomain.toLowerCase()
         );
       }
 
@@ -81,18 +90,33 @@ const CourseList = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Learning Catalog</h1>
-          <p className="text-lg text-gray-600">Discover comprehensive courses to advance your skills</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Learning Catalog
+          </h1>
+          <p className="text-lg text-gray-600">
+            Discover comprehensive courses to advance your skills
+          </p>
         </div>
 
+        {/* Filter Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full">
+              {/* Search Input */}
               <div className="relative flex-1 max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                  <svg
+                    className="h-5 w-5 text-gray-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <input
@@ -104,6 +128,7 @@ const CourseList = () => {
                 />
               </div>
 
+              {/* Domain Filter */}
               <div className="flex gap-3 items-center">
                 <select
                   value={selectedDomain}
@@ -130,27 +155,34 @@ const CourseList = () => {
             </div>
 
             <div className="text-sm text-gray-500 whitespace-nowrap">
-              {filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'} found
+              {filteredCourses.length}{" "}
+              {filteredCourses.length === 1 ? "course" : "courses"} found
             </div>
           </div>
         </div>
 
+        {/* Courses Grid */}
         {filteredCourses && filteredCourses.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredCourses.map((course) => {
-              // ✅ Calculate discounted price
-              const finalPrice = course.discount > 0
-                ? (course.coursePrice - (course.discount * course.coursePrice) / 100).toFixed(2)
-                : course.coursePrice.toFixed(2);
+              const finalPrice =
+                course.discount > 0
+                  ? (
+                      course.coursePrice -
+                      (course.discount * course.coursePrice) / 100
+                    ).toFixed(2)
+                  : course.coursePrice.toFixed(2);
 
-              const originalPrice = course.discount > 0 ? course.coursePrice.toFixed(2) : null;
+              const originalPrice =
+                course.discount > 0 ? course.coursePrice.toFixed(2) : null;
 
               return (
                 <div
                   key={course._id}
                   onClick={() => navigate(`/course/${course._id}`)}
-                  className="group cursor-pointer bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-100"
+                  className="group cursor-pointer bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-100 flex flex-col"
                 >
+                  {/* Thumbnail */}
                   <div className="relative overflow-hidden">
                     <img
                       src={course.courseThumbnail}
@@ -164,7 +196,8 @@ const CourseList = () => {
                     )}
                   </div>
 
-                  <div className="p-5">
+                  {/* Content Section */}
+                  <div className="p-5 flex flex-col flex-1">
                     <div className="mb-3">
                       <span className="inline-block bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
                         {course.domain || "General"}
@@ -175,26 +208,55 @@ const CourseList = () => {
                       {course.courseTitle}
                     </h3>
 
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-4 flex-1">
                       {course.courseDescription}
                     </p>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-lg text-gray-900">
-                          {currency}{finalPrice}
-                        </span>
-                        {originalPrice && (
-                          <span className="text-sm text-gray-500 line-through">
-                            {currency}{originalPrice}
+                    {/* Price Section */}
+                    <div className="mt-auto">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-lg text-gray-900">
+                            {currency}
+                            {finalPrice}
                           </span>
-                        )}
+                          {originalPrice && (
+                            <span className="text-sm text-gray-500 line-through">
+                              {currency}
+                              {originalPrice}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-blue-600 group-hover:translate-x-1 transition-transform duration-200">
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </div>
                       </div>
-                      <div className="text-blue-600 group-hover:translate-x-1 transition-transform duration-200">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
+
+                      {/* View More Details Button */}
+                      {course.pdfLink && (
+                        <a
+                          href={course.pdfLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-full inline-block text-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                        >
+                          View More Details
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -204,15 +266,26 @@ const CourseList = () => {
         ) : (
           <div className="text-center py-16 bg-white rounded-xl shadow-sm">
             <div className="max-w-md mx-auto">
-              <svg className="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              <svg
+                className="mx-auto h-16 w-16 text-gray-400 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No courses found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No courses found
+              </h3>
               <p className="text-gray-500 mb-4">
-                {searchInput || selectedDomain 
+                {searchInput || selectedDomain
                   ? "Try adjusting your search or filter criteria"
-                  : "No courses available at the moment"
-                }
+                  : "No courses available at the moment"}
               </p>
               {(searchInput || selectedDomain) && (
                 <button

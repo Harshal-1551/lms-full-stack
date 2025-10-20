@@ -101,11 +101,25 @@ const CourseDetails = () => {
           </div>
 
           <p className="text-sm">
-            Course by <span className="text-blue-600 underline">{courseData.educator.name}</span>
+            Project by <span className="text-blue-600 underline">{courseData.educator.name}</span>
           </p>
 
           <div className="pt-8 text-gray-800">
-            <h2 className="text-xl font-semibold">Course Structure</h2>
+            <h2 className="text-xl font-semibold">Project Structure</h2>
+            {/* ✅ View More Details button right below the heading */}
+            {courseData.pdfLink && (
+              <div className="mt-3 mb-5">
+                <a
+                  href={courseData.pdfLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-center px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-200"
+                >
+                  View More Details
+                </a>
+              </div>
+            )}
+
             <div className="pt-5">
               {courseData.courseContent.map((chapter, index) => (
                 <div key={index} className="border border-gray-300 bg-white mb-2 rounded">
@@ -175,7 +189,7 @@ const CourseDetails = () => {
           </div>
 
           <div className="py-20 text-sm md:text-default">
-            <h3 className="text-xl font-semibold text-gray-800">Course Description</h3>
+            <h3 className="text-xl font-semibold text-gray-800">Project Description</h3>
             <p
               className="rich-text pt-3"
               dangerouslySetInnerHTML={{ __html: courseData.courseDescription }}
@@ -236,14 +250,16 @@ const CourseDetails = () => {
               {isAlreadyEnrolled ? 'Already Enrolled' : 'Enroll Now'}
             </button>
             <div className="pt-6">
-              <p className="md:text-xl text-lg font-medium text-gray-800">What's in the course?</p>
-              <ul className="ml-4 pt-2 text-sm md:text-default list-disc text-gray-500">
-                <li>Lifetime access with free updates.</li>
-                <li>Step-by-step, hands-on project guidance.</li>
-                <li>Downloadable resources and source code.</li>
-                <li>Quizzes to test your knowledge.</li>
-                <li>Certificate of completion.</li>
-              </ul>
+              <h3 className="text-xl font-medium text-gray-800 mb-2">
+              Project Highlights
+            </h3>
+            <ul className="ml-4 pt-2 text-sm md:text-default list-disc text-gray-500">
+              <li>Detailed documentation included.</li>
+              <li>Step-by-step implementation guide.</li>
+              <li>Fully responsive modern design.</li>
+              <li>Source code & deployment support.</li>
+              <li>Real-world application structure.</li>
+            </ul>
             </div>
           </div>
         </div>
