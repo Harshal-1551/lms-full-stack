@@ -5,6 +5,7 @@ import { useClerk, UserButton, useUser } from "@clerk/clerk-react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { assets } from "../../assets/assets";
+import { FaHeart, FaShoppingCart } from "react-icons/fa"; // ✅ added icons
 
 const Navbar = () => {
   const location = useLocation();
@@ -61,8 +62,8 @@ const Navbar = () => {
   };
 
   const handleMenuClick = (path) => {
-    setMenuOpen(false); // close mobile menu immediately
-    navigate(path); // navigate to the route
+    setMenuOpen(false);
+    navigate(path);
   };
 
   return (
@@ -79,6 +80,7 @@ const Navbar = () => {
         style={{ height: navHeight }}
       >
         <div className="flex items-center justify-between px-6 sm:px-10 md:px-14 lg:px-24 h-full">
+          {/* Logo */}
           <div
             onClick={() => navigate("/")}
             className="flex items-center gap-2 cursor-pointer group"
@@ -92,6 +94,7 @@ const Navbar = () => {
             />
           </div>
 
+          {/* ✅ Desktop Menu */}
           <div className="hidden md:flex items-center gap-6 text-gray-800 font-medium">
             {user ? (
               <>
@@ -108,6 +111,24 @@ const Navbar = () => {
                     {item.name}
                   </button>
                 ))}
+
+                {/* ❤️ Wishlist + 🛒 Cart buttons */}
+                <div className="flex items-center gap-4 ml-4">
+                  <Link
+                    to="/wishlist"
+                    className="relative text-gray-700 hover:text-rose-600 transition-transform hover:scale-110"
+                  >
+                    <FaHeart size={22} />
+                  </Link>
+                  <Link
+                    to="/cart"
+                    className="relative text-gray-700 hover:text-emerald-600 transition-transform hover:scale-110"
+                  >
+                    <FaShoppingCart size={22} />
+                  </Link>
+                </div>
+
+                {/* User profile */}
                 <div className="ml-2 scale-90 hover:scale-100 transition-transform duration-300">
                   <UserButton afterSignOutUrl="/" />
                 </div>
@@ -122,6 +143,7 @@ const Navbar = () => {
             )}
           </div>
 
+          {/* Mobile Menu Toggle */}
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -132,6 +154,7 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* ✅ Mobile Dropdown Menu */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
@@ -147,15 +170,35 @@ const Navbar = () => {
                     <button
                       key={item.path}
                       onClick={() => handleMenuClick(item.path)}
-                      className={`min-w-[60%] px-4 py-2 text-sm text-center font-semibold rounded-full border transition-all duration-300 ${isActive(item.path)
+                      className={`min-w-[60%] px-4 py-2 text-sm text-center font-semibold rounded-full border transition-all duration-300 ${
+                        isActive(item.path)
                           ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md border-transparent"
                           : "border-indigo-300 text-indigo-600 hover:bg-indigo-100 hover:border-indigo-400"
-                        }`}
+                      }`}
                     >
                       {item.name}
                     </button>
                   ))}
-                  <div className="mt-2 scale-90 hover:scale-100 transition-transform duration-300">
+
+                  {/* ❤️ Wishlist + 🛒 Cart (Mobile) */}
+                  <div className="flex items-center justify-center gap-8 mt-3">
+                    <Link
+                      to="/wishlist"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-rose-600 hover:text-rose-700 transition-transform hover:scale-110"
+                    >
+                      <FaHeart size={22} />
+                    </Link>
+                    <Link
+                      to="/cart"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-emerald-600 hover:text-emerald-700 transition-transform hover:scale-110"
+                    >
+                      <FaShoppingCart size={22} />
+                    </Link>
+                  </div>
+
+                  <div className="mt-3 scale-90 hover:scale-100 transition-transform duration-300">
                     <UserButton afterSignOutUrl="/" />
                   </div>
                 </>
@@ -170,8 +213,6 @@ const Navbar = () => {
             </motion.div>
           )}
         </AnimatePresence>
-
-
       </motion.nav>
 
       <div style={{ height: navHeight, transition: "height 0.3s ease" }} />

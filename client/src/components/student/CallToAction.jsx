@@ -8,12 +8,12 @@ const CallToAction = () => {
 
   // ✅ Functions to handle button clicks
   const handleViewProjects = () => {
-    navigate("/course-list"); // Change "/projects" to your actual route (like /educator/my-courses or /my-projects)
+    navigate("/course-list"); 
   };
 
   const handleContactUs = () => {
     
-    navigate("/");
+    navigate("/contact");
 
   };
 

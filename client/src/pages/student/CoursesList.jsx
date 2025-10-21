@@ -1,9 +1,19 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { FaHeart, FaRegHeart, FaShoppingCart, FaCartPlus } from "react-icons/fa";
 
 const CourseList = () => {
-  const { allCourses } = useContext(AppContext);
+  const {
+    allCourses,
+    wishlist = [],
+    cart = [],
+    toggleWishlist,
+    addCourseToCart,
+    removeCourseFromCart,
+  } = useContext(AppContext);
+
   const navigate = useNavigate();
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchInput, setSearchInput] = useState("");
@@ -19,19 +29,10 @@ const CourseList = () => {
   }, [allCourses]);
 
   useEffect(() => {
-    if (allCourses) {
-      console.log(
-        "All Courses:",
-        allCourses.map((c) => ({ title: c.courseTitle, domain: c.domain }))
-      );
-    }
-  }, [allCourses]);
-
-  useEffect(() => {
     if (allCourses && allCourses.length > 0) {
       setIsLoading(true);
 
-      let tempCourses = allCourses.slice();
+      let tempCourses = [...allCourses];
 
       if (searchInput) {
         tempCourses = tempCourses.filter(
@@ -88,10 +89,10 @@ const CourseList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <div className="mb-8">
+        {/* Header */}
+        <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Learning Catalog
           </h1>
@@ -106,25 +107,12 @@ const CourseList = () => {
             <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full">
               {/* Search Input */}
               <div className="relative flex-1 max-w-md">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
                 <input
                   type="text"
                   placeholder="Search courses by title or description..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 transition-colors duration-200"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50"
                 />
               </div>
 
@@ -133,7 +121,7 @@ const CourseList = () => {
                 <select
                   value={selectedDomain}
                   onChange={(e) => setSelectedDomain(e.target.value)}
-                  className="border border-gray-200 px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 min-w-[200px] transition-colors duration-200"
+                  className="border border-gray-200 px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 min-w-[200px]"
                 >
                   <option value="">All Domains</option>
                   {domains.map((domain) => (
@@ -146,7 +134,7 @@ const CourseList = () => {
                 {(searchInput || selectedDomain) && (
                   <button
                     onClick={clearFilters}
-                    className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                    className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-800"
                   >
                     Clear Filters
                   </button>
@@ -165,22 +153,29 @@ const CourseList = () => {
         {filteredCourses && filteredCourses.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredCourses.map((course) => {
+              const discount = Number(course.discount) || 0;
+              const price = Number(course.coursePrice) || 0;
               const finalPrice =
-                course.discount > 0
-                  ? (
-                      course.coursePrice -
-                      (course.discount * course.coursePrice) / 100
-                    ).toFixed(2)
-                  : course.coursePrice.toFixed(2);
-
+                discount > 0
+                  ? (price - (discount * price) / 100).toFixed(2)
+                  : price.toFixed(2);
               const originalPrice =
-                course.discount > 0 ? course.coursePrice.toFixed(2) : null;
+                discount > 0 ? price.toFixed(2) : null;
+
+              const inWishlist = (wishlist ?? []).some(
+                (c) => String(c._id) === String(course._id)
+              );
+              const inCart = (cart ?? []).some(
+                (c) => String(c._id) === String(course._id)
+              );
 
               return (
-                <div
+                <motion.div
                   key={course._id}
+                  whileHover={{ scale: 1.03, y: -5 }}
+                  transition={{ type: "spring", stiffness: 250 }}
                   onClick={() => navigate(`/course/${course._id}`)}
-                  className="group cursor-pointer bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-100 flex flex-col"
+                  className="group bg-white rounded-xl shadow-sm hover:shadow-lg overflow-hidden border border-gray-100 hover:border-blue-100 flex flex-col cursor-pointer"
                 >
                   {/* Thumbnail */}
                   <div className="relative overflow-hidden">
@@ -189,113 +184,105 @@ const CourseList = () => {
                       alt={course.courseTitle}
                       className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    {course.discount > 0 && (
-                      <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                        {course.discount}% OFF
-                      </div>
-                    )}
                   </div>
 
-                  {/* Content Section */}
+                  {/* Content */}
                   <div className="p-5 flex flex-col flex-1">
-                    <div className="mb-3">
-                      <span className="inline-block bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
-                        {course.domain || "General"}
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                        🌐 {course.domain || "General"}
                       </span>
+
+                      {/* Wishlist & Cart Icons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWishlist?.(course._id);
+                          }}
+                          className={`p-2 rounded-full border transition-all hover:scale-110 ${
+                            inWishlist
+                              ? "bg-rose-500 text-white border-rose-500"
+                              : "bg-white text-rose-600 border-gray-200"
+                          }`}
+                        >
+                          {inWishlist ? <FaHeart size={16} /> : <FaRegHeart size={16} />}
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            inCart
+                              ? removeCourseFromCart?.(course._id)
+                              : addCourseToCart?.(course._id);
+                          }}
+                          className={`p-2 rounded-full border transition-all hover:scale-110 ${
+                            inCart
+                              ? "bg-emerald-500 text-white border-emerald-500"
+                              : "bg-white text-emerald-600 border-gray-200"
+                          }`}
+                        >
+                          {inCart ? <FaShoppingCart size={16} /> : <FaCartPlus size={16} />}
+                        </button>
+                      </div>
                     </div>
 
-                    <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
+                    <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-2 group-hover:text-blue-600">
                       {course.courseTitle}
                     </h3>
 
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-4 flex-1">
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-1">
                       {course.courseDescription}
                     </p>
 
-                    {/* Price Section */}
-                    <div className="mt-auto">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-lg text-gray-900">
+                    {/* Price */}
+                    <div className="flex flex-col gap-1 mt-auto">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-lg text-gray-900">
+                          {currency}
+                          {finalPrice}
+                        </span>
+                        {originalPrice && (
+                          <span className="text-sm text-gray-500 line-through">
                             {currency}
-                            {finalPrice}
+                            {originalPrice}
                           </span>
-                          {originalPrice && (
-                            <span className="text-sm text-gray-500 line-through">
-                              {currency}
-                              {originalPrice}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="text-blue-600 group-hover:translate-x-1 transition-transform duration-200">
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                        </div>
+                        )}
                       </div>
-
-                      {/* View More Details Button */}
-                      {course.pdfLink && (
-                        <a
-                          href={course.pdfLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-full inline-block text-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                        >
-                          View More Details
-                        </a>
+                      {discount > 0 && (
+                        <p className="text-xs font-medium text-green-600">
+                          {discount}% OFF
+                        </p>
                       )}
                     </div>
+
+                    {/* View More Details */}
+                    {course.pdfLink && (
+                      <a
+                        href={course.pdfLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-4 w-full inline-block text-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        View More Details
+                      </a>
+                    )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         ) : (
           <div className="text-center py-16 bg-white rounded-xl shadow-sm">
-            <div className="max-w-md mx-auto">
-              <svg
-                className="mx-auto h-16 w-16 text-gray-400 mb-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
-              </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No courses found
-              </h3>
-              <p className="text-gray-500 mb-4">
-                {searchInput || selectedDomain
-                  ? "Try adjusting your search or filter criteria"
-                  : "No courses available at the moment"}
-              </p>
-              {(searchInput || selectedDomain) && (
-                <button
-                  onClick={clearFilters}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                >
-                  Clear all filters
-                </button>
-              )}
-            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No courses found
+            </h3>
+            <p className="text-gray-500">
+              {searchInput || selectedDomain
+                ? "Try adjusting your search or filter criteria"
+                : "No courses available at the moment"}
+            </p>
           </div>
         )}
       </div>

@@ -18,13 +18,16 @@ import StudentsEnrolled from "./pages/educator/StudentsEnrolled";
 import "quill/dist/quill.snow.css";
 import "react-toastify/dist/ReactToastify.css";
 import EducatorLayout from "./components/layouts/EducatorLayout";
-import WhatsAppButton from "./components/common/WhatsAppButton"; // ✅ import WhatsApp button
+import WhatsAppButton from "./components/common/WhatsAppButton";
 import AboutUs from "./pages/student/AboutUs";
 import ScrollToTop from "./components/ScrollToTop";
 import BackButton from "./components/common/BackButton";
 import Contact from "./pages/student/Contact";
 import PrivacyPolicy from "./pages/student/PrivacyPolicy";
 
+
+import WishlistPage from "./pages/student/WishlistPage";
+import CartPage from "./pages/student/CartPage";
 
 const ProtectedUserRoute = ({ children }) => {
   const { role, loading } = useContext(AppContext);
@@ -50,8 +53,8 @@ const App = () => (
   <>
     <ToastContainer position="top-center" autoClose={2000} />
     <Navbar />
-    <ScrollToTop/>
-    <BackButton/>
+    <ScrollToTop />
+    <BackButton />
 
     <Routes>
       {/* 🌍 Public Routes */}
@@ -59,9 +62,9 @@ const App = () => (
       <Route path="/course/:id" element={<CourseDetails />} />
       <Route path="/course-list" element={<CoursesList />} />
       <Route path="/course-list/:input" element={<CoursesList />} />
-       <Route path="/about" element={<AboutUs />} />
-       <Route path="/contact" element={<Contact />} />
-       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
       {/* 👩‍🎓 Student Protected Routes */}
       <Route
@@ -72,6 +75,25 @@ const App = () => (
           </ProtectedUserRoute>
         }
       />
+
+      {/* ✅ Wishlist & Cart Routes */}
+      <Route
+        path="/wishlist"
+        element={
+          <ProtectedUserRoute>
+            <WishlistPage />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/cart"
+        element={
+          <ProtectedUserRoute>
+            <CartPage />
+          </ProtectedUserRoute>
+        }
+      />
+
       <Route
         path="/player/:courseId"
         element={

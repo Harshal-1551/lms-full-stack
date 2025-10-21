@@ -87,7 +87,7 @@ const Footer = () => {
         <div className="flex flex-col items-center md:items-start w-full md:w-1/3">
           <h2 className="font-semibold text-lg mb-5">Subscribe to our newsletter</h2>
           <p className="text-sm text-white/80 mb-4 text-center md:text-left">
-            Get weekly updates on new courses, tips, and exclusive offers delivered straight to your inbox.
+            Get weekly updates on new projects, tips, and exclusive offers delivered straight to your inbox.
           </p>
           <div className="flex items-center gap-2 w-full max-w-md">
             <input

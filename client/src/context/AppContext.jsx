@@ -22,6 +22,8 @@ export const AppContextProvider = (props) => {
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [wishlist, setWishlist] = useState([]); 
+  const [cart, setCart] = useState([]);
 
   const hasFetchedUser = useRef(false); // ✅ Prevent multiple fetches
 
@@ -192,6 +194,106 @@ useEffect(() => {
   }
 }, [userData]);
 
+ // =====================================================
+  // ✅ Fetch Wishlist and Cart
+  // =====================================================
+// Fetch wishlist
+const fetchWishlist = async () => {
+  try {
+    const token = await getToken();
+    const { data } = await axios.get(`${backendUrl}/api/user/wishlist`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (data.success) setWishlist(data.wishlist || []);
+  } catch (err) {
+    console.error('fetchWishlist error:', err.message || err);
+  }
+};
+
+// Toggle wishlist (add/remove)
+const toggleWishlist = async (courseId, addWhenNotFound = true) => {
+  try {
+    const token = await getToken();
+
+    // Check locally if exists (optimistic)
+    const exists = wishlist.some((c) => String(c._id) === String(courseId));
+
+    if (exists) {
+      await axios.post(`${backendUrl}/api/user/wishlist/remove`, { courseId }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setWishlist(prev => prev.filter(c => String(c._id) !== String(courseId)));
+    } else if (addWhenNotFound) {
+      await axios.post(`${backendUrl}/api/user/wishlist/add`, { courseId }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // fetch details of the course to append
+      const { data } = await axios.get(`${backendUrl}/api/course/${courseId}`);
+      if (data.success) {
+        setWishlist(prev => [...prev, data.courseData]);
+      } else {
+        // fallback refetch all
+        fetchWishlist();
+      }
+    }
+  } catch (err) {
+    console.error('toggleWishlist error:', err);
+  }
+};
+
+// Fetch cart
+const fetchCart = async () => {
+  try {
+    const token = await getToken();
+    const { data } = await axios.get(`${backendUrl}/api/user/cart`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (data.success) setCart(data.cart || []);
+  } catch (err) {
+    console.error('fetchCart error:', err);
+  }
+};
+
+const addCourseToCart = async (courseId) => {
+  try {
+    const token = await getToken();
+    await axios.post(`${backendUrl}/api/user/cart/add`, { courseId }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    // Add course object locally (fetch details)
+    const { data } = await axios.get(`${backendUrl}/api/course/${courseId}`);
+    if (data.success) setCart(prev => {
+      if (prev.some(c => String(c._id) === String(courseId))) return prev;
+      return [...prev, data.courseData];
+    });
+  } catch (err) {
+    console.error('addCourseToCart error:', err);
+  }
+};
+
+const removeCourseFromCart = async (courseId) => {
+  try {
+    const token = await getToken();
+    await axios.post(`${backendUrl}/api/user/cart/remove`, { courseId }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setCart(prev => prev.filter(c => String(c._id) !== String(courseId)));
+  } catch (err) {
+    console.error('removeCourseFromCart error:', err);
+  }
+};
+
+useEffect(() => {
+  if (userData?._id) {
+    fetchWishlist();
+    fetchCart();
+  } else {
+    setWishlist([]);
+    setCart([]);
+  }
+}, [userData]);
+
+
 
   // =====================================================
   // ✅ Spinner only for first load (not for every page)
@@ -230,6 +332,13 @@ useEffect(() => {
     setLoading,
     isEducator,
     isAdmin,
+    wishlist,
+    fetchWishlist,
+    toggleWishlist,
+    cart,
+    fetchCart,
+    addCourseToCart,
+    removeCourseFromCart,
   };
 
   return <AppContext.Provider value={value}>{props.children}</AppContext.Provider>;

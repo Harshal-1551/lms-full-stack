@@ -239,3 +239,143 @@ export const promoteToAdmin = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+
+// ✅ GET wishlist 
+export const getWishlist = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const user = await User.findById(userId).populate({
+      path: "wishlist",
+      model: "Course",
+      select:
+        "courseTitle courseThumbnail coursePrice discount domain courseDomain courseDescription",
+    });
+
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+
+    const formattedWishlist = user.wishlist.map((course) => ({
+      _id: course._id,
+      courseTitle: course.courseTitle || "Untitled Course",
+      courseThumbnail: course.courseThumbnail || "",
+      coursePrice: course.coursePrice || 0,
+      discount: course.discount || 0,
+      domain: course.domain || course.courseDomain || "General",
+      courseDescription: course.courseDescription || "",
+    }));
+
+    res.json({ success: true, wishlist: formattedWishlist });
+  } catch (err) {
+    console.error("getWishlist error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+// ADD to wishlist
+export const addToWishlist = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { courseId } = req.body;
+    if (!courseId) return res.status(400).json({ success: false, message: 'courseId required' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    if (!user.wishlist.includes(courseId)) {
+      user.wishlist.push(courseId);
+      await user.save();
+    }
+
+    res.json({ success: true, message: 'Added to wishlist' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// REMOVE from wishlist
+export const removeFromWishlist = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { courseId } = req.body;
+    if (!courseId) return res.status(400).json({ success: false, message: 'courseId required' });
+
+    await User.findByIdAndUpdate(userId, { $pull: { wishlist: courseId } });
+
+    res.json({ success: true, message: 'Removed from wishlist' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ✅ GET cart
+export const getCart = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const user = await User.findById(userId).populate({
+      path: "cart",
+      model: "Course", 
+      select: "courseTitle courseThumbnail coursePrice discount domain courseDescription",
+    });
+
+    if (!user)
+      return res.status(404).json({ success: false, message: "User not found" });
+
+    const formattedCart = user.cart.map((course) => ({
+      _id: course._id,
+      courseTitle: course.courseTitle || "Untitled Course",
+      courseThumbnail: course.courseThumbnail || "",
+      coursePrice: course.coursePrice || 0,
+      discount: course.discount || 0,
+      domain: course.domain || "General",
+      courseDescription: course.courseDescription || "",
+    }));
+
+    res.json({ success: true, cart: formattedCart });
+  } catch (error) {
+    console.error("getCart error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+// ADD to cart
+export const addToCart = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { courseId } = req.body;
+    if (!courseId) return res.status(400).json({ success: false, message: 'courseId required' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    if (!user.cart.includes(courseId)) {
+      user.cart.push(courseId);
+      await user.save();
+    }
+
+    res.json({ success: true, message: 'Added to cart' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// REMOVE from cart
+export const removeFromCart = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { courseId } = req.body;
+    if (!courseId) return res.status(400).json({ success: false, message: 'courseId required' });
+
+    await User.findByIdAndUpdate(userId, { $pull: { cart: courseId } });
+
+    res.json({ success: true, message: 'Removed from cart' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
