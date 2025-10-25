@@ -94,10 +94,10 @@ const CourseList = () => {
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Learning Catalog
+            Projects Catalog
           </h1>
           <p className="text-lg text-gray-600">
-            Discover comprehensive courses to advance your skills
+            Discover comprehensive projects to advance your skills
           </p>
         </div>
 
@@ -109,7 +109,7 @@ const CourseList = () => {
               <div className="relative flex-1 max-w-md">
                 <input
                   type="text"
-                  placeholder="Search courses by title or description..."
+                  placeholder="Search projects by title or description..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50"
@@ -144,7 +144,7 @@ const CourseList = () => {
 
             <div className="text-sm text-gray-500 whitespace-nowrap">
               {filteredCourses.length}{" "}
-              {filteredCourses.length === 1 ? "course" : "courses"} found
+              {filteredCourses.length === 1 ? "project" : "projects"} found
             </div>
           </div>
         </div>

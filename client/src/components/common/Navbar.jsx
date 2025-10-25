@@ -183,42 +183,39 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center gap-3">
+          {/* Mobile Menu Toggle - FIXED POSITIONING */}
+          <div className="md:hidden flex items-center gap-2">
             {/* Show Wishlist and Cart icons on mobile when user is logged in */}
             {user && (
-              <div className="flex items-center gap-3 mr-1">
+              <div className="flex items-center gap-2 mr-1">
                 <Link
                   to="/wishlist"
-                  className="text-gray-700 hover:text-rose-600 transition-transform hover:scale-110 p-2"
+                  className="text-gray-700 hover:text-rose-600 transition-transform hover:scale-110 p-1"
                 >
-                  <FaHeart size={20} />
+                  <FaHeart size={18} />
                 </Link>
                 <Link
                   to="/cart"
-                  className="text-gray-700 hover:text-emerald-600 transition-transform hover:scale-110 p-2"
+                  className="text-gray-700 hover:text-emerald-600 transition-transform hover:scale-110 p-1"
                 >
-                  <FaShoppingCart size={20} />
+                  <FaShoppingCart size={18} />
                 </Link>
               </div>
             )}
             
-            {/* IMPROVED Hamburger Button - High Contrast and Clear Visibility */}
+            {/* FIXED Hamburger Button - Properly visible on mobile */}
             <button
               ref={buttonRef}
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center justify-center px-3 py-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 active:bg-indigo-800 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 border-2 border-white min-w-[70px] font-semibold"
+              className="flex items-center justify-center px-2 py-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 active:bg-indigo-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-300 border border-white font-semibold"
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
             >
               {menuOpen ? (
-                <X size={20} className="text-white font-bold" strokeWidth={2.5} />
+                <X size={18} className="text-white" />
               ) : (
-                <Menu size={20} className="text-white font-bold" strokeWidth={2.5} />
+                <Menu size={18} className="text-white" />
               )}
-              <span className="ml-2 text-sm font-medium">
-                {menuOpen ? "Close" : "Menu"}
-              </span>
             </button>
           </div>
         </div>
@@ -233,7 +230,8 @@ const Navbar = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40 mt-[84px]"
+                className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+                style={{ top: navHeight }}
                 onClick={() => setMenuOpen(false)}
               />
               
@@ -244,7 +242,8 @@ const Navbar = () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-xl py-6 px-6 z-50"
+                className="md:hidden fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-xl py-6 px-6 z-50"
+                style={{ top: navHeight }}
               >
                 <div className="flex flex-col items-center gap-4">
                   {user ? (
