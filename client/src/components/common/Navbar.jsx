@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
 import { useClerk, UserButton, useUser } from "@clerk/clerk-react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { assets } from "../../assets/assets";
-import { FaHeart, FaShoppingCart } from "react-icons/fa"; // ✅ added icons
+import { FaHeart, FaShoppingCart } from "react-icons/fa";
 
 const Navbar = () => {
   const location = useLocation();
@@ -15,7 +15,10 @@ const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [navHeight, setNavHeight] = useState(84); // default height
+  const [navHeight, setNavHeight] = useState(84);
+  
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
 
   const clerkRole =
     user?.publicMetadata?.role ||
@@ -29,6 +32,7 @@ const Navbar = () => {
   const role = appRole || clerkRole || "user";
   const isAdminOrEducator = role === "admin" || role === "educator";
 
+  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -42,6 +46,38 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Handle click outside to close menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target)
+      ) {
+        setMenuOpen(false);
+      }
+    };
+
+    // Handle escape key press
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && menuOpen) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [menuOpen]);
 
   const menuItems = [
     { name: "Home", path: "/" },
@@ -66,6 +102,10 @@ const Navbar = () => {
     navigate(path);
   };
 
+  const handleLinkClick = (path) => {
+    setMenuOpen(false);
+  };
+
   return (
     <>
       <motion.nav
@@ -79,7 +119,7 @@ const Navbar = () => {
         }`}
         style={{ height: navHeight }}
       >
-        <div className="flex items-center justify-between px-6 sm:px-10 md:px-14 lg:px-24 h-full">
+        <div className="flex items-center justify-between px-4 sm:px-6 md:px-10 lg:px-24 h-full">
           {/* Logo */}
           <div
             onClick={() => navigate("/")}
@@ -88,13 +128,13 @@ const Navbar = () => {
             <img
               src={assets.logo}
               alt="Logo"
-              className={`w-28 lg:w-32 transition-transform duration-300 group-hover:scale-105 ${
-                scrolled ? "w-24 lg:w-28" : ""
+              className={`w-24 lg:w-32 transition-transform duration-300 group-hover:scale-105 ${
+                scrolled ? "w-20 lg:w-28" : ""
               }`}
             />
           </div>
 
-          {/* ✅ Desktop Menu */}
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6 text-gray-800 font-medium">
             {user ? (
               <>
@@ -112,7 +152,7 @@ const Navbar = () => {
                   </button>
                 ))}
 
-                {/* ❤️ Wishlist + 🛒 Cart buttons */}
+                {/* Wishlist + Cart buttons */}
                 <div className="flex items-center gap-4 ml-4">
                   <Link
                     to="/wishlist"
@@ -144,73 +184,103 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-4">
+            {/* Show Wishlist and Cart icons on mobile when user is logged in */}
+            {user && (
+              <div className="flex items-center gap-3 mr-2">
+                <Link
+                  to="/wishlist"
+                  className="text-gray-700 hover:text-rose-600 transition-transform hover:scale-110"
+                >
+                  <FaHeart size={20} />
+                </Link>
+                <Link
+                  to="/cart"
+                  className="text-gray-700 hover:text-emerald-600 transition-transform hover:scale-110"
+                >
+                  <FaShoppingCart size={20} />
+                </Link>
+              </div>
+            )}
+            
+            {/* Hamburger menu button */}
             <button
+              ref={buttonRef}
               onClick={() => setMenuOpen(!menuOpen)}
-              className="text-gray-700 focus:outline-none"
+              className="p-2 rounded-lg bg-white/50 backdrop-blur-sm border border-gray-200 shadow-sm hover:bg-white hover:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+              aria-label="Toggle menu"
+              aria-expanded={menuOpen}
             >
-              {menuOpen ? <X size={26} /> : <Menu size={26} />}
+              {menuOpen ? (
+                <X size={24} className="text-gray-700" />
+              ) : (
+                <Menu size={24} className="text-gray-700" />
+              )}
             </button>
           </div>
         </div>
 
-        {/* ✅ Mobile Dropdown Menu */}
+        {/* Mobile Dropdown Menu */}
         <AnimatePresence>
           {menuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="md:hidden flex flex-col items-center gap-3 bg-white/95 backdrop-blur-xl border border-gray-100 shadow-lg py-4 px-6 rounded-2xl mx-4 mt-2"
-            >
-              {user ? (
-                <>
-                  {menuItems.map((item) => (
+            <>
+              {/* Backdrop overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40 mt-[84px]"
+                onClick={() => setMenuOpen(false)}
+              />
+              
+              {/* Menu content */}
+              <motion.div
+                ref={menuRef}
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-xl py-6 px-6 z-50"
+              >
+                <div className="flex flex-col items-center gap-4">
+                  {user ? (
+                    <>
+                      {menuItems.map((item) => (
+                        <button
+                          key={item.path}
+                          onClick={() => handleMenuClick(item.path)}
+                          className={`w-full max-w-xs px-6 py-3 text-base text-center font-semibold rounded-xl border-2 transition-all duration-300 ${
+                            isActive(item.path)
+                              ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md border-transparent"
+                              : "border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 hover:shadow-sm"
+                          }`}
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+
+                      {/* User profile in mobile menu */}
+                      <div className="mt-4 pt-4 border-t border-gray-200 w-full max-w-xs flex justify-center">
+                        <div className="scale-100 hover:scale-105 transition-transform duration-300">
+                          <UserButton afterSignOutUrl="/" />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
                     <button
-                      key={item.path}
-                      onClick={() => handleMenuClick(item.path)}
-                      className={`min-w-[60%] px-4 py-2 text-sm text-center font-semibold rounded-full border transition-all duration-300 ${
-                        isActive(item.path)
-                          ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md border-transparent"
-                          : "border-indigo-300 text-indigo-600 hover:bg-indigo-100 hover:border-indigo-400"
-                      }`}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        openSignIn();
+                      }}
+                      className="w-full max-w-xs px-6 py-3 text-base bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-300"
                     >
-                      {item.name}
+                      Create Account
                     </button>
-                  ))}
-
-                  {/* ❤️ Wishlist + 🛒 Cart (Mobile) */}
-                  <div className="flex items-center justify-center gap-8 mt-3">
-                    <Link
-                      to="/wishlist"
-                      onClick={() => setMenuOpen(false)}
-                      className="text-rose-600 hover:text-rose-700 transition-transform hover:scale-110"
-                    >
-                      <FaHeart size={22} />
-                    </Link>
-                    <Link
-                      to="/cart"
-                      onClick={() => setMenuOpen(false)}
-                      className="text-emerald-600 hover:text-emerald-700 transition-transform hover:scale-110"
-                    >
-                      <FaShoppingCart size={22} />
-                    </Link>
-                  </div>
-
-                  <div className="mt-3 scale-90 hover:scale-100 transition-transform duration-300">
-                    <UserButton afterSignOutUrl="/" />
-                  </div>
-                </>
-              ) : (
-                <button
-                  onClick={() => openSignIn()}
-                  className="min-w-[60%] px-4 py-2 text-sm bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full font-semibold shadow-md hover:opacity-90 transition-all duration-300"
-                >
-                  Create Account
-                </button>
-              )}
-            </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </motion.nav>
