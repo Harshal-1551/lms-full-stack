@@ -203,18 +203,18 @@ const Navbar = () => {
               </div>
             )}
             
-            {/* Hamburger menu button */}
+            {/* IMPROVED Hamburger menu button - Better visibility */}
             <button
               ref={buttonRef}
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 rounded-lg bg-white/50 backdrop-blur-sm border border-gray-200 shadow-sm hover:bg-white hover:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+              className="p-3 rounded-xl bg-indigo-500 shadow-lg hover:bg-indigo-600 active:bg-indigo-700 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 focus:ring-opacity-50 border-2 border-white shadow-indigo-200"
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
             >
               {menuOpen ? (
-                <X size={24} className="text-gray-700" />
+                <X size={22} className="text-white font-bold" />
               ) : (
-                <Menu size={24} className="text-gray-700" />
+                <Menu size={22} className="text-white font-bold" />
               )}
             </button>
           </div>
