@@ -184,37 +184,43 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center gap-4">
+          <div className="md:hidden flex items-center gap-3">
             {/* Show Wishlist and Cart icons on mobile when user is logged in */}
             {user && (
-              <div className="flex items-center gap-3 mr-2">
+              <div className="flex items-center gap-3 mr-1">
                 <Link
                   to="/wishlist"
-                  className="text-gray-700 hover:text-rose-600 transition-transform hover:scale-110"
+                  className="text-gray-700 hover:text-rose-600 transition-transform hover:scale-110 p-2"
                 >
                   <FaHeart size={20} />
                 </Link>
                 <Link
                   to="/cart"
-                  className="text-gray-700 hover:text-emerald-600 transition-transform hover:scale-110"
+                  className="text-gray-700 hover:text-emerald-600 transition-transform hover:scale-110 p-2"
                 >
                   <FaShoppingCart size={20} />
                 </Link>
               </div>
             )}
             
-            {/* IMPROVED Hamburger menu button - Better visibility */}
+            {/* Full Button Style Hamburger Menu */}
             <button
               ref={buttonRef}
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-3 rounded-xl bg-indigo-500 shadow-lg hover:bg-indigo-600 active:bg-indigo-700 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 focus:ring-opacity-50 border-2 border-white shadow-indigo-200"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg shadow-md hover:bg-indigo-600 active:bg-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-300 border border-indigo-400"
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
             >
               {menuOpen ? (
-                <X size={22} className="text-white font-bold" />
+                <>
+                  <X size={18} className="text-white" />
+                  <span className="text-sm font-medium">Close</span>
+                </>
               ) : (
-                <Menu size={22} className="text-white font-bold" />
+                <>
+                  <Menu size={18} className="text-white" />
+                  <span className="text-sm font-medium">Menu</span>
+                </>
               )}
             </button>
           </div>
