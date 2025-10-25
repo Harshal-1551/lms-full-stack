@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
+import Footer from "../../components/student/Footer";
+
 
 const Contact = () => {
   useEffect(() => {
@@ -7,7 +9,8 @@ const Contact = () => {
   }, []);
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-20 px-6 md:px-20 text-gray-800 dark:text-gray-100">
+    <>
+     <div className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-20 px-6 md:px-20 text-gray-800 dark:text-gray-100">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -60,6 +63,10 @@ const Contact = () => {
         </div>
       </motion.div>
     </div>
+
+      <Footer/>
+    </>
+
   );
 };
 

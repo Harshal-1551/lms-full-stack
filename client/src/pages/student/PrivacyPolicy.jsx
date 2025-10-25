@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
+import Footer from "../../components/student/Footer";
+
 
 const PrivacyPolicy = () => {
   useEffect(() => {
@@ -7,6 +9,7 @@ const PrivacyPolicy = () => {
   }, []);
 
   return (
+    <>
     <div className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-20 px-6 md:px-20 text-gray-800 dark:text-gray-100">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -46,6 +49,8 @@ const PrivacyPolicy = () => {
         </p>
       </motion.div>
     </div>
+    <Footer/>
+    </>
   );
 };
 

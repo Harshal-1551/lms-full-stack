@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import Loading from "../../components/student/Loading";
 import { motion } from "framer-motion";
 import SideBar from "../../components/educator/SideBar";
+import Footer from "../../components/educator/Footer";
 
 const StudentsEnrolled = () => {
   const { backendUrl, getToken, isEducator } = useContext(AppContext);
@@ -51,6 +52,7 @@ const StudentsEnrolled = () => {
   if (loading) return <Loading />;
 
   return (
+   <>
     <div className="flex min-h-screen">
 
       <div className="flex-1 flex flex-col items-center justify-start md:p-8 p-4 pt-12 bg-gray-50">
@@ -123,6 +125,8 @@ const StudentsEnrolled = () => {
         )}
       </div>
     </div>
+   <Footer/>
+   </>
   );
 };
 

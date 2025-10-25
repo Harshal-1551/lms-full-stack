@@ -10,6 +10,7 @@ import YouTube from 'react-youtube';
 import { useAuth } from '@clerk/clerk-react';
 import Loading from '../../components/student/Loading';
 
+
 const CourseDetails = () => {
   const { id } = useParams();
 

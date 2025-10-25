@@ -3,6 +3,8 @@ import { AppContext } from "../../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaHeart, FaRegHeart, FaShoppingCart, FaCartPlus } from "react-icons/fa";
+import Footer from "../../components/student/Footer";
+
 
 const CourseList = () => {
   const {
@@ -89,7 +91,8 @@ const CourseList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 pt-24">
+    <>
+     <div className="min-h-screen bg-gray-50 py-8 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 text-center">
@@ -286,7 +289,10 @@ const CourseList = () => {
           </div>
         )}
       </div>
-    </div>
+    </div>  
+      <Footer/>
+    </>
+   
   );
 };
 

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { FaLaptopCode, FaUsers, FaLightbulb, FaCogs } from "react-icons/fa";
 import { useEffect } from "react";
 import BackButton from "../../components/common/BackButton";
-
+import Footer from "../../components/student/Footer";
 
 
 const AboutUs = () => {
@@ -13,7 +13,8 @@ const AboutUs = () => {
   }, []);
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100 min-h-screen py-20 px-6 md:px-16">
+   <>
+     <div className="bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100 min-h-screen py-20 px-6 md:px-16">
       
       {/* Hero Section */}
       <motion.div
@@ -135,6 +136,8 @@ const AboutUs = () => {
         </a>
       </motion.div>
     </div>
+    <Footer/>
+   </>
   );
 };
 

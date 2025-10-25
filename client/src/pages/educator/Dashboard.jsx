@@ -5,6 +5,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Loading from "../../components/student/Loading";
 import { motion } from "framer-motion";
+import Footer from "../../components/educator/Footer";
 
 // Animation variants
 const containerVariants = {
@@ -161,6 +162,7 @@ const Dashboard = () => {
   if (!dashboardData) return <Loading />;
 
   return (
+    <>
     <div className="flex min-h-screen bg-gray-50">
       <motion.div className="flex-1 flex flex-col items-center justify-start md:p-8 p-4 pt-8 pb-0">
         <div className="space-y-10 w-full max-w-6xl flex flex-col items-center">
@@ -196,6 +198,8 @@ const Dashboard = () => {
         </div>
       </motion.div>
     </div>
+     <Footer/>
+    </>
   );
 };
 
