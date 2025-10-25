@@ -203,25 +203,22 @@ const Navbar = () => {
               </div>
             )}
             
-            {/* Full Button Style Hamburger Menu */}
+            {/* IMPROVED Hamburger Button - High Contrast and Clear Visibility */}
             <button
               ref={buttonRef}
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg shadow-md hover:bg-indigo-600 active:bg-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-300 border border-indigo-400"
+              className="flex items-center justify-center px-3 py-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 active:bg-indigo-800 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 border-2 border-white min-w-[70px] font-semibold"
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
             >
               {menuOpen ? (
-                <>
-                  <X size={18} className="text-white" />
-                  <span className="text-sm font-medium">Close</span>
-                </>
+                <X size={20} className="text-white font-bold" strokeWidth={2.5} />
               ) : (
-                <>
-                  <Menu size={18} className="text-white" />
-                  <span className="text-sm font-medium">Menu</span>
-                </>
+                <Menu size={20} className="text-white font-bold" strokeWidth={2.5} />
               )}
+              <span className="ml-2 text-sm font-medium">
+                {menuOpen ? "Close" : "Menu"}
+              </span>
             </button>
           </div>
         </div>
