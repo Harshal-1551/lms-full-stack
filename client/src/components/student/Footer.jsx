@@ -70,13 +70,14 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-start">
             <h2 className="font-semibold text-lg md:text-xl mb-6 text-white">Company</h2>
             <ul className="grid grid-cols-2 gap-3 md:flex md:flex-col md:space-y-3 w-full max-w-xs">
-              <li>
-                <button
+               <li>
+                <Link 
+                  to="/" 
                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                  className="text-white/80 hover:text-cyan-300 transition-all duration-300 hover:translate-x-1 md:hover:translate-x-2 text-sm md:text-base py-1"
+                  className="text-white/80 hover:text-cyan-300 transition-all duration-300 hover:translate-x-1 md:hover:translate-x-2 text-sm md:text-base py-1 block"
                 >
                   Home
-                </button>
+                </Link>
               </li>
               <li>
                 <Link 

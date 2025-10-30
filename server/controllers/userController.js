@@ -7,12 +7,12 @@ import { clerkClient } from "@clerk/express";
 
 
 // 🔹 Helper: Check role (admin or user)
-const checkRole = async (req, requiredRole) => {
+const checkRole = async (req, allowedRoles) => {
   const userId = req.auth.userId;
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
-  if (user.role !== requiredRole)
-    throw new Error(`Access denied: ${requiredRole} role required`);
+  if (!allowedRoles.includes(user.role))
+    throw new Error(`Access denied: ${allowedRoles.join(' or ')} role required`);
   return user;
 };
 
@@ -29,7 +29,7 @@ export const getUserData = async (req, res) => {
         name: user.name,
         email: user.email,
         imageUrl: user.imageUrl,
-        role: user.role, // <-- ensure role is included
+        role: user.role, 
         enrolledCourses: user.enrolledCourses,
       },
     });
@@ -39,10 +39,10 @@ export const getUserData = async (req, res) => {
 };
 
 
-// 🛒 Purchase Course — Only for users
+// 🛒 Purchase Course — Only for users or admins
 export const purchaseCourse = async (req, res) => {
   try {
-    const user = await checkRole(req, "user");
+    const user = await checkRole(req, ["user", "admin"]);
     const { courseId } = req.body;
     const { origin } = req.headers;
 

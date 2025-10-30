@@ -10,19 +10,29 @@ import YouTube from 'react-youtube';
 import { useAuth } from '@clerk/clerk-react';
 import Loading from '../../components/student/Loading';
 
-
 const CourseDetails = () => {
   const { id } = useParams();
-
   const [courseData, setCourseData] = useState(null);
   const [playerData, setPlayerData] = useState(null);
   const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false);
+  const [openSections, setOpenSections] = useState({});
 
-  const { backendUrl, currency, userData, calculateChapterTime, calculateCourseDuration, calculateRating, calculateNoOfLectures } = useContext(AppContext);
+  const {
+    backendUrl,
+    currency,
+    userData,
+    calculateChapterTime,
+    calculateCourseDuration,
+    calculateRating,
+    calculateNoOfLectures,
+  } = useContext(AppContext);
 
+  const { getToken } = useAuth();
+
+  // ---------- Fetch Course Data ----------
   const fetchCourseData = async () => {
     try {
-      const { data } = await axios.get(backendUrl + '/api/course/' + id);
+      const { data } = await axios.get(`${backendUrl}/api/course/${id}`);
       if (data.success) setCourseData(data.courseData);
       else toast.error(data.message);
     } catch (error) {
@@ -30,8 +40,7 @@ const CourseDetails = () => {
     }
   };
 
-  const [openSections, setOpenSections] = useState({});
-
+  // ---------- Toggle Section ----------
   const toggleSection = (index) => {
     setOpenSections((prev) => ({
       ...prev,
@@ -39,20 +48,27 @@ const CourseDetails = () => {
     }));
   };
 
-  // ✅ Simple redirect version
-  const enrollCourse = () => {
-    if (!userData) {
-      toast.warn('Please login to enroll');
-      return;
-    }
+  // ---------- Enroll Course (Stripe Checkout) ----------
+  const enrollCourse = async () => {
+    try {
+      if (!userData) return toast.warn('Please login to enroll');
+      if (isAlreadyEnrolled) return toast.warn('Already Enrolled');
 
-    if (isAlreadyEnrolled) {
-      toast.warn('Already Enrolled');
-      return;
-    }
+      const token = await getToken();
+      const { data } = await axios.post(
+        `${backendUrl}/api/user/purchase`,
+        { courseId: courseData._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    // 🔗 Direct Razorpay payment link
-    window.location.href = 'https://rzp.io/l/8SjZQ5sW';
+      if (data.success) {
+        window.location.replace(data.session_url); // Redirect to Stripe Checkout
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   useEffect(() => {
@@ -65,11 +81,13 @@ const CourseDetails = () => {
     }
   }, [userData, courseData]);
 
+  // ---------- Main Render ----------
   return courseData ? (
     <>
       <div className="flex md:flex-row flex-col-reverse gap-10 relative items-start justify-between md:px-36 px-8 md:pt-20 pt-10 text-left">
         <div className="absolute top-0 left-0 w-full h-section-height -z-1 bg-gradient-to-b from-cyan-100/70"></div>
 
+        {/* ---------- LEFT SIDE: Course Info ---------- */}
         <div className="max-w-xl z-10 text-gray-500">
           <h1 className="md:text-course-deatails-heading-large text-course-deatails-heading-small font-semibold text-gray-800">
             {courseData.courseTitle}
@@ -102,12 +120,16 @@ const CourseDetails = () => {
           </div>
 
           <p className="text-sm">
-            Project by <span className="text-blue-600 underline">{courseData.educator.name}</span>
+            Project by{' '}
+            <span className="text-blue-600 underline">
+              {courseData.educator?.name || 'Unknown Educator'}
+            </span>
           </p>
 
+          {/* ---------- Project Structure ---------- */}
           <div className="pt-8 text-gray-800">
             <h2 className="text-xl font-semibold">Project Structure</h2>
-            {/* ✅ View More Details button right below the heading */}
+            {/* ✅ View More Details button */}
             {courseData.pdfLink && (
               <div className="mt-3 mb-5">
                 <a
@@ -136,9 +158,7 @@ const CourseDetails = () => {
                           openSections[index] ? 'rotate-180' : ''
                         }`}
                       />
-                      <p className="font-medium md:text-base text-sm">
-                        {chapter.chapterTitle}
-                      </p>
+                      <p className="font-medium md:text-base text-sm">{chapter.chapterTitle}</p>
                     </div>
                     <p className="text-sm md:text-default">
                       {chapter.chapterContent.length} lectures - {calculateChapterTime(chapter)}
@@ -189,6 +209,7 @@ const CourseDetails = () => {
             </div>
           </div>
 
+          {/* ---------- Project Description ---------- */}
           <div className="py-20 text-sm md:text-default">
             <h3 className="text-xl font-semibold text-gray-800">Project Description</h3>
             <p
@@ -198,6 +219,7 @@ const CourseDetails = () => {
           </div>
         </div>
 
+        {/* ---------- RIGHT SIDE CARD ---------- */}
         <div className="max-w-course-card z-10 shadow-custom-card rounded-t md:rounded-none overflow-hidden bg-white min-w-[300px] sm:min-w-[420px]">
           {playerData ? (
             <YouTube
@@ -251,16 +273,14 @@ const CourseDetails = () => {
               {isAlreadyEnrolled ? 'Already Enrolled' : 'Enroll Now'}
             </button>
             <div className="pt-6">
-              <h3 className="text-xl font-medium text-gray-800 mb-2">
-              Project Highlights
-            </h3>
-            <ul className="ml-4 pt-2 text-sm md:text-default list-disc text-gray-500">
-              <li>Detailed documentation included.</li>
-              <li>Step-by-step implementation guide.</li>
-              <li>Fully responsive modern design.</li>
-              <li>Source code & deployment support.</li>
-              <li>Real-world application structure.</li>
-            </ul>
+              <h3 className="text-xl font-medium text-gray-800 mb-2">Project Highlights</h3>
+              <ul className="ml-4 pt-2 text-sm md:text-default list-disc text-gray-500">
+                <li>Detailed documentation included.</li>
+                <li>Step-by-step implementation guide.</li>
+                <li>Fully responsive modern design.</li>
+                <li>Source code & deployment support.</li>
+                <li>Real-world application structure.</li>
+              </ul>
             </div>
           </div>
         </div>
