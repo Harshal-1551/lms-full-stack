@@ -14,6 +14,7 @@ import {
   userEnrolledCourses,
   updateRoleToAdmin,
   promoteToAdmin,
+  purchaseMultipleCourses,
 } from "../controllers/userController.js";
 
 import { protectEducator } from "../middlewares/authMiddleware.js";
@@ -28,6 +29,7 @@ userRouter.get("/enrolled-courses", requireAuth(), userEnrolledCourses);
 userRouter.post("/update-course-progress", requireAuth(), updateUserCourseProgress);
 userRouter.post("/get-course-progress", requireAuth(), getUserCourseProgress);
 userRouter.post("/add-rating", requireAuth(), addUserRating);
+userRouter.post("/purchase/multiple",requireAuth(),purchaseMultipleCourses);
 
 //  Admin routes
 userRouter.post("/promote", protectEducator, promoteToAdmin);

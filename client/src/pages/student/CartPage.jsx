@@ -2,16 +2,20 @@ import React, { useContext, useEffect } from "react";
 import { AppContext } from "../../context/AppContext";
 import { motion } from "framer-motion";
 import { assets } from "../../assets/assets";
+import { useAuth } from "@clerk/clerk-react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const CartPage = () => {
-  const { cart = [], fetchCart, removeCourseFromCart, calculateRating } =
+  const { cart = [], fetchCart, removeCourseFromCart, calculateRating, backendUrl } =
     useContext(AppContext);
+
+  const { getToken } = useAuth();
+  const currency = "$";
 
   useEffect(() => {
     fetchCart?.();
   }, []);
-
-  const currency = "$";
 
   // ✅ Calculate subtotal
   const subtotal = cart.reduce((acc, course) => {
@@ -22,9 +26,52 @@ const CartPage = () => {
     return acc + price;
   }, 0);
 
-  // ✅ Razorpay Checkout Link
-  const handleCheckout = () => {
-    window.open("https://rzp.io/l/8SjZQ5sW", "_blank");
+  // ✅ Stripe: Buy Single Course
+  const handleSingleCheckout = async (courseId) => {
+    try {
+      const token = await getToken();
+      if (!token) return toast.warn("Please login to continue.");
+
+      const { data } = await axios.post(
+        `${backendUrl}/api/user/purchase`,
+        { courseId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        window.location.replace(data.session_url); // Redirect to Stripe checkout
+      } else {
+        toast.error(data.message || "Checkout failed.");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+  };
+
+  // ✅ Stripe: Checkout for All Courses in Cart
+  const handleAllCheckout = async () => {
+    try {
+      const token = await getToken();
+      if (!token) return toast.warn("Please login to continue.");
+      if (cart.length === 0) return toast.warn("Your cart is empty.");
+
+      // send all course IDs to backend
+      const courseIds = cart.map((course) => course._id);
+
+      const { data } = await axios.post(
+        `${backendUrl}/api/user/purchase/multiple`,
+        { courseIds },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        window.location.replace(data.session_url);
+      } else {
+        toast.error(data.message || "Checkout failed.");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
   };
 
   return (
@@ -46,8 +93,6 @@ const CartPage = () => {
             {/* ✅ Left Section: Course List */}
             <div className="lg:col-span-2 space-y-6">
               {cart.map((course) => {
-                console.log("🧩 Cart course data:", course);
-
                 const courseDomain =
                   course.courseDomain || course.domain || "General";
 
@@ -138,7 +183,7 @@ const CartPage = () => {
                           Remove
                         </button>
                         <button
-                          onClick={handleCheckout}
+                          onClick={() => handleSingleCheckout(course._id)}
                           className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-all"
                         >
                           Buy Now
@@ -187,7 +232,7 @@ const CartPage = () => {
               </div>
 
               <button
-                onClick={handleCheckout}
+                onClick={handleAllCheckout}
                 className="mt-6 w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all"
               >
                 Proceed to Checkout

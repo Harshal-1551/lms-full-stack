@@ -5,14 +5,13 @@ import User from "../models/User.js";
 import stripe from "stripe";
 import { clerkClient } from "@clerk/express";
 
-
 // 🔹 Helper: Check role (admin or user)
 const checkRole = async (req, allowedRoles) => {
   const userId = req.auth.userId;
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
   if (!allowedRoles.includes(user.role))
-    throw new Error(`Access denied: ${allowedRoles.join(' or ')} role required`);
+    throw new Error(`Access denied: ${allowedRoles.join(" or ")} role required`);
   return user;
 };
 
@@ -29,7 +28,7 @@ export const getUserData = async (req, res) => {
         name: user.name,
         email: user.email,
         imageUrl: user.imageUrl,
-        role: user.role, 
+        role: user.role,
         enrolledCourses: user.enrolledCourses,
       },
     });
@@ -37,7 +36,6 @@ export const getUserData = async (req, res) => {
     res.json({ success: false, message: err.message });
   }
 };
-
 
 // 🛒 Purchase Course — Only for users or admins
 export const purchaseCourse = async (req, res) => {
@@ -47,7 +45,8 @@ export const purchaseCourse = async (req, res) => {
     const { origin } = req.headers;
 
     const courseData = await Course.findById(courseId);
-    if (!courseData) return res.json({ success: false, message: "Course Not Found" });
+    if (!courseData)
+      return res.json({ success: false, message: "Course Not Found" });
 
     const purchaseData = {
       courseId: courseData._id,
@@ -89,6 +88,75 @@ export const purchaseCourse = async (req, res) => {
   }
 };
 
+
+
+// 🧩 🛒 NEW: Purchase Multiple Courses (Cart Checkout)
+export const purchaseMultipleCourses = async (req, res) => {
+  try {
+    const user = await checkRole(req, ["user", "admin"]);
+    const { courseIds } = req.body;
+    const { origin } = req.headers;
+
+    if (!courseIds || courseIds.length === 0)
+      return res.json({ success: false, message: "No courses selected." });
+
+    const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+    const currency = process.env.CURRENCY.toLocaleLowerCase();
+
+    const line_items = [];
+    const purchases = [];
+
+    // Loop through all selected courses
+    for (const id of courseIds) {
+      const course = await Course.findById(id);
+      if (!course) continue;
+
+      const price =
+        course.coursePrice - (course.discount * course.coursePrice) / 100;
+
+      // Create purchase record
+      const purchaseData = await Purchase.create({
+        courseId: course._id,
+        userId: user._id,
+        amount: price.toFixed(2),
+      });
+      purchases.push(purchaseData);
+
+      // Add each course to Stripe checkout items
+      line_items.push({
+        price_data: {
+          currency,
+          product_data: { name: course.courseTitle },
+          unit_amount: Math.floor(price) * 100,
+        },
+        quantity: 1,
+      });
+    }
+
+    if (line_items.length === 0)
+      return res.json({
+        success: false,
+        message: "No valid courses found for checkout.",
+      });
+
+    // Stripe checkout session
+    const session = await stripeInstance.checkout.sessions.create({
+      success_url: `${origin}/loading/my-enrollments`,
+      cancel_url: `${origin}/cart`,
+      line_items,
+      mode: "payment",
+      metadata: { purchaseIds: purchases.map((p) => p._id.toString()).join(",") },
+    });
+
+    res.json({ success: true, session_url: session.url });
+  } catch (error) {
+    console.error("purchaseMultipleCourses error:", error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+
+
 // 🎓 User Enrolled Courses
 export const userEnrolledCourses = async (req, res) => {
   try {
@@ -113,7 +181,10 @@ export const updateUserCourseProgress = async (req, res) => {
 
     if (progressData) {
       if (progressData.lectureCompleted.includes(lectureId)) {
-        return res.json({ success: true, message: "Lecture Already Completed" });
+        return res.json({
+          success: true,
+          message: "Lecture Already Completed",
+        });
       }
       progressData.lectureCompleted.push(lectureId);
       await progressData.save();
@@ -156,10 +227,14 @@ export const addUserRating = async (req, res) => {
       return res.json({ success: false, message: "Invalid Details" });
 
     const course = await Course.findById(courseId);
-    if (!course) return res.json({ success: false, message: "Course not found" });
+    if (!course)
+      return res.json({ success: false, message: "Course not found" });
 
     if (!user.enrolledCourses.includes(courseId))
-      return res.json({ success: false, message: "User has not purchased this course." });
+      return res.json({
+        success: false,
+        message: "User has not purchased this course.",
+      });
 
     const existingRatingIndex = course.courseRatings.findIndex(
       (r) => r.userId === user._id.toString()
@@ -177,7 +252,6 @@ export const addUserRating = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
-
 
 // 👑 Promote a User to Admin (for super-admin or via manual call)
 export const updateRoleToAdmin = async (req, res) => {
@@ -204,24 +278,19 @@ export const promoteToAdmin = async (req, res) => {
       return res.json({ success: false, message: "clerkId is required" });
     }
 
-    // 1) Update Clerk metadata
     await clerkClient.users.updateUserMetadata(clerkId, {
       publicMetadata: {
-        role: "educator", // your existing convention
+        role: "educator",
         roles: ["admin", "user"],
       },
     });
 
-    // 2) Also update or create DB user role so backend queries (and AppContext) sees admin
-    // Note: your DB User._id is the Clerk user id (from earlier code). Adjust if different.
     const dbUser = await User.findById(clerkId);
 
     if (dbUser) {
       dbUser.role = "admin";
       await dbUser.save();
     } else {
-      // optionally create a user document (if user might not exist in DB)
-      // fetch Clerk user to get name/email/image
       const clerkUser = await clerkClient.users.getUser(clerkId);
       const newUser = new User({
         _id: clerkId,
@@ -240,7 +309,7 @@ export const promoteToAdmin = async (req, res) => {
   }
 };
 
-// ✅ GET wishlist 
+// ✅ GET wishlist
 export const getWishlist = async (req, res) => {
   try {
     const userId = req.auth.userId;
@@ -274,23 +343,26 @@ export const getWishlist = async (req, res) => {
   }
 };
 
-
 // ADD to wishlist
 export const addToWishlist = async (req, res) => {
   try {
     const userId = req.auth.userId;
     const { courseId } = req.body;
-    if (!courseId) return res.status(400).json({ success: false, message: 'courseId required' });
+    if (!courseId)
+      return res
+        .status(400)
+        .json({ success: false, message: "courseId required" });
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user)
+      return res.status(404).json({ success: false, message: "User not found" });
 
     if (!user.wishlist.includes(courseId)) {
       user.wishlist.push(courseId);
       await user.save();
     }
 
-    res.json({ success: true, message: 'Added to wishlist' });
+    res.json({ success: true, message: "Added to wishlist" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -301,11 +373,14 @@ export const removeFromWishlist = async (req, res) => {
   try {
     const userId = req.auth.userId;
     const { courseId } = req.body;
-    if (!courseId) return res.status(400).json({ success: false, message: 'courseId required' });
+    if (!courseId)
+      return res
+        .status(400)
+        .json({ success: false, message: "courseId required" });
 
     await User.findByIdAndUpdate(userId, { $pull: { wishlist: courseId } });
 
-    res.json({ success: true, message: 'Removed from wishlist' });
+    res.json({ success: true, message: "Removed from wishlist" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -318,8 +393,9 @@ export const getCart = async (req, res) => {
 
     const user = await User.findById(userId).populate({
       path: "cart",
-      model: "Course", 
-      select: "courseTitle courseThumbnail coursePrice discount domain courseDescription",
+      model: "Course",
+      select:
+        "courseTitle courseThumbnail coursePrice discount domain courseDescription",
     });
 
     if (!user)
@@ -342,24 +418,26 @@ export const getCart = async (req, res) => {
   }
 };
 
-
-
 // ADD to cart
 export const addToCart = async (req, res) => {
   try {
     const userId = req.auth.userId;
     const { courseId } = req.body;
-    if (!courseId) return res.status(400).json({ success: false, message: 'courseId required' });
+    if (!courseId)
+      return res
+        .status(400)
+        .json({ success: false, message: "courseId required" });
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user)
+      return res.status(404).json({ success: false, message: "User not found" });
 
     if (!user.cart.includes(courseId)) {
       user.cart.push(courseId);
       await user.save();
     }
 
-    res.json({ success: true, message: 'Added to cart' });
+    res.json({ success: true, message: "Added to cart" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -370,11 +448,14 @@ export const removeFromCart = async (req, res) => {
   try {
     const userId = req.auth.userId;
     const { courseId } = req.body;
-    if (!courseId) return res.status(400).json({ success: false, message: 'courseId required' });
+    if (!courseId)
+      return res
+        .status(400)
+        .json({ success: false, message: "courseId required" });
 
     await User.findByIdAndUpdate(userId, { $pull: { cart: courseId } });
 
-    res.json({ success: true, message: 'Removed from cart' });
+    res.json({ success: true, message: "Removed from cart" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
